@@ -84,6 +84,7 @@ public class CartServiceImpl implements CartService {
                     double finalPrice = price - (price * discount / 100.0);
 
                     return CartItemDto.builder()
+                            .productId(i.getProduct().getId())
                             .productName(i.getProduct().getName())
                             .unitPrice(price)
                             .discount((int) discount)
