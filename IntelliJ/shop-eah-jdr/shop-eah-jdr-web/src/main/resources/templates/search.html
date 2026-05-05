@@ -6,13 +6,10 @@
 
 <body>
 <div th:replace="~{fragments/header :: preloader}"></div>
-
 <div th:replace="~{fragments/header :: header}"></div>
-
 <div th:replace="~{fragments/header :: breadcumb(${subtitulo}, ${titulo})}"></div>
 
 <div class="container mt-5 mb-5">
-
   <div class="row">
     <div class="col-lg-10 offset-lg-1">
 
@@ -22,141 +19,152 @@
         <form method="get" th:action="@{/products/search}">
           <div class="row">
             <div class="col-md-12 mb-3">
-              <label for="nD" class="form-label">Nombre / descripción</label>
-              <input type="text" id="nD" name="nD" class="form-control" th:value="${nD}" placeholder="Buscar productos...">
+              <label for="text" class="form-label">Nombre / descripción</label>
+              <input type="text"
+                     id="text"
+                     name="text"
+                     class="form-control"
+                     th:value="${text}"
+                     placeholder="Buscar productos...">
             </div>
 
             <div class="col-md-6 mb-3">
-              <label for="mP" class="form-label">Precio máximo (€)</label>
-              <input type="number" id="mP" name="mP" class="form-control" step="0.01" min="0" th:value="${mP}">
+              <label for="maxPrice" class="form-label">Precio máximo (€)</label>
+              <input type="text"
+                     id="maxPrice"
+                     name="maxPrice"
+                     class="form-control"
+                     inputmode="decimal"
+                     pattern="[0-9]+([.,][0-9]{1,2})?"
+                     th:value="${maxPrice}"
+                     placeholder="0.00">
             </div>
 
             <div class="col-md-6 mb-3">
-              <label for="m" class="form-label">Marca</label>
-              <select name="m" id="m" class="form-select">
+              <label for="brandId" class="form-label">Marca</label>
+              <select name="brandId" id="brandId" class="form-select">
                 <option value="">Cualquier marca</option>
                 <option th:each="brand : ${brands}"
                         th:value="${brand.id}"
                         th:text="${brand.name}"
-                        th:selected="${m != null and m == brand.id}">
+                        th:selected="${brandId != null and brandId == brand.id}">
                 </option>
               </select>
             </div>
 
             <div class="col-md-6 mb-3">
-              <label for="c" class="form-label">Categoría</label>
-              <select name="c" id="c" class="form-select">
+              <label for="categoryId" class="form-label">Categoría</label>
+              <select name="categoryId" id="categoryId" class="form-select">
                 <option value="">Cualquier categoría</option>
                 <option th:each="category : ${categories}"
                         th:value="${category.id}"
                         th:text="${category.name}"
-                        th:selected="${c != null and c == category.id}">
+                        th:selected="${categoryId != null and categoryId == category.id}">
                 </option>
               </select>
             </div>
 
             <div class="col-md-3 mb-3">
-              <label for="tP" class="form-label">Tamaño de página</label>
-              <select name="tP" id="tP" class="form-select">
+              <label for="size" class="form-label">Tamaño de página</label>
+              <select name="size" id="size" class="form-select">
                 <option value="">Por defecto</option>
-                <option value="1" th:selected="${tP == 1}">1</option>
-                <option value="2" th:selected="${tP == 2}">2</option>
-                <option value="5" th:selected="${tP == 5}">5</option>
-                <option value="10" th:selected="${tP == 10}">10</option>
-                <option value="50" th:selected="${tP == 50}">50</option>
+                <option value="1" th:selected="${size == 1}">1</option>
+                <option value="2" th:selected="${size == 2}">2</option>
+                <option value="5" th:selected="${size == 5}">5</option>
+                <option value="10" th:selected="${size == 10}">10</option>
+                <option value="50" th:selected="${size == 50}">50</option>
               </select>
             </div>
 
             <div class="col-md-3 mb-3">
-              <label for="oP" class="form-label">Ordenar por</label>
-              <select name="oP" id="oP" class="form-select">
-                <option value="" th:selected="${oP == null or oP == ''}">Por defecto</option>
-                <option value="name" th:selected="${oP == 'name'}">Nombre</option>
-                <option value="priceMinMax" th:selected="${oP == 'priceMinMax'}">Precio de menor a mayor</option>
-                <option value="priceMaxMin" th:selected="${oP == 'priceMaxMin'}">Precio de mayor a menor</option>
-                <option value="stockMinMax" th:selected="${oP == 'stockMinMax'}">Stock de menor a mayor</option>
-                <option value="stockMaxMin" th:selected="${oP == 'stockMaxMin'}">Stock de mayor a menor</option>
+              <label for="sort" class="form-label">Ordenar por</label>
+              <select name="sort" id="sort" class="form-select">
+                <option value="" th:selected="${sort == null or sort == ''}">Por defecto</option>
+                <option value="name" th:selected="${sort == 'name'}">Nombre</option>
+                <option value="priceAsc" th:selected="${sort == 'priceAsc'}">Precio de menor a mayor</option>
+                <option value="priceDesc" th:selected="${sort == 'priceDesc'}">Precio de mayor a menor</option>
+                <option value="stockAsc" th:selected="${sort == 'stockAsc'}">Stock de menor a mayor</option>
+                <option value="stockDesc" th:selected="${sort == 'stockDesc'}">Stock de mayor a mayor</option>
               </select>
             </div>
           </div>
 
-          <button type="submit" class="boxed-btn">
-            Buscar
-          </button>
+          <button type="submit" class="boxed-btn">Buscar</button>
         </form>
       </div>
 
-      <div th:if="${searched}">
-        <div th:if="${productsPage == null or productsPage.isEmpty()}" class="alert alert-warning">
-          No se han encontrado productos con los criterios indicados.
-        </div>
+      <div th:if="${productPage == null or productPage.isEmpty()}" class="alert alert-warning">
+        No se han encontrado productos con los criterios indicados.
+      </div>
 
-        <div th:if="${productsPage != null and !productsPage.isEmpty()}">
-          <p class="mb-4">
-            Mostrando página
-            <span th:text="${productsPage.number + 1}">1</span>
-            de
-            <span th:text="${productsPage.totalPages}">1</span>.
-            Total de productos encontrados:
-            <span th:text="${productsPage.totalElements}">0</span>
-          </p>
+      <div th:if="${productPage != null and !productPage.isEmpty()}">
+        <p class="mb-4">
+          Mostrando página
+          <span th:text="${productPage.number + 1}">1</span>
+          de
+          <span th:text="${productPage.totalPages}">1</span>.
+          Total de productos encontrados:
+          <span th:text="${productPage.totalElements}">0</span>
+        </p>
 
-          <div class="row">
-            <div class="col-lg-4 col-md-6 mb-4" th:each="product : ${productsPage.content}">
-              <div class="single-product-item text-center">
-                <div class="product-image">
-                  <a th:href="@{/products/{id}/{slug}(id=${product.id}, slug=${product.slug})}">
-                    <img th:src="${product.image != null ? product.image : '/images/default-product.png'}"
-                         th:alt="${product.name}">
-                  </a>
-                </div>
-                <h3 th:text="${product.name}">Nombre</h3>
-                <p class="product-price">
-                  <span th:text="${product.brand.name}">Marca</span>
-                  <span th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' €'">0.00 €</span>
-                </p>
-                <a th:href="@{/products/{id}/{slug}(id=${product.id}, slug=${product.slug})}"
-                   class="cart-btn">
-                  Ver detalle
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-4" th:each="product : ${productPage.content}">
+            <div class="single-product-item text-center">
+              <div class="product-image">
+                <a th:href="@{/products/{id}/{slug}(id=${product.id}, slug=${product.slug})}">
+                  <img th:src="${product.image != null ? product.image : '/images/products/imagenGenerica.png'}"
+                       th:alt="${product.name}">
                 </a>
               </div>
+
+              <h3 th:text="${product.name}">Nombre</h3>
+
+              <p class="product-price">
+                <span th:text="${product.brand.name}">Marca</span>
+                <span th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' €'">0.00 €</span>
+              </p>
+
+              <a th:href="@{/products/{id}/{slug}(id=${product.id}, slug=${product.slug})}"
+                 class="cart-btn">
+                Ver detalle
+              </a>
             </div>
           </div>
-
-          <nav th:if="${productsPage.totalPages > 1}" aria-label="Paginación">
-            <ul class="pagination justify-content-center mt-4">
-
-              <li class="page-item" th:classappend="${productsPage.first} ? 'disabled'">
-                <a class="page-link"
-                   th:if="${!productsPage.first}"
-                   th:href="@{/products/search(nD=${nD},mP=${mP},m=${m},c=${c},tP=${tP},oP=${oP},page=${productsPage.number - 1})}">
-                  Anterior
-                </a>
-                <span class="page-link" th:if="${productsPage.first}">Anterior</span>
-              </li>
-
-              <li class="page-item"
-                  th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                  th:classappend="${i == productsPage.number} ? 'active'">
-                <a class="page-link"
-                   th:href="@{/products/search(nD=${nD},mP=${mP},m=${m},c=${c},tP=${tP},oP=${oP},page=${i})}"
-                   th:text="${i + 1}">
-                  1
-                </a>
-              </li>
-
-              <li class="page-item" th:classappend="${productsPage.last} ? 'disabled'">
-                <a class="page-link"
-                   th:if="${!productsPage.last}"
-                   th:href="@{/products/search(nD=${nD},mP=${mP},m=${m},c=${c},tP=${tP},oP=${oP},page=${productsPage.number + 1})}">
-                  Siguiente
-                </a>
-                <span class="page-link" th:if="${productsPage.last}">Siguiente</span>
-              </li>
-
-            </ul>
-          </nav>
         </div>
+
+        <nav th:if="${productPage.totalPages > 1}" aria-label="Paginación">
+          <ul class="pagination justify-content-center mt-4">
+
+            <li class="page-item" th:classappend="${productPage.first} ? 'disabled'">
+              <a class="page-link"
+                 th:if="${!productPage.first}"
+                 th:href="@{/products/search(text=${text},maxPrice=${maxPrice},brandId=${brandId},categoryId=${categoryId},size=${size},sort=${sort},page=${productPage.number - 1})}">
+                Anterior
+              </a>
+              <span class="page-link" th:if="${productPage.first}">Anterior</span>
+            </li>
+
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                th:classappend="${i == productPage.number} ? 'active'">
+              <a class="page-link"
+                 th:href="@{/products/search(text=${text},maxPrice=${maxPrice},brandId=${brandId},categoryId=${categoryId},size=${size},sort=${sort},page=${i})}"
+                 th:text="${i + 1}">
+                1
+              </a>
+            </li>
+
+            <li class="page-item" th:classappend="${productPage.last} ? 'disabled'">
+              <a class="page-link"
+                 th:if="${!productPage.last}"
+                 th:href="@{/products/search(text=${text},maxPrice=${maxPrice},brandId=${brandId},categoryId=${categoryId},size=${size},sort=${sort},page=${productPage.number + 1})}">
+                Siguiente
+              </a>
+              <span class="page-link" th:if="${productPage.last}">Siguiente</span>
+            </li>
+
+          </ul>
+        </nav>
       </div>
 
     </div>
@@ -166,7 +174,6 @@
 <div th:replace="~{fragments/footer :: carousel}"></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/footer :: copyright}"></div>
-
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 
 </body>

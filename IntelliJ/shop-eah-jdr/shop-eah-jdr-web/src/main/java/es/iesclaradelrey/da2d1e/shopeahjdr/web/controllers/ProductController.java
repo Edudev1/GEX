@@ -81,84 +81,72 @@ public class ProductController {
 
         return mv;
     }
-//    @GetMapping("/category/{categoryId}")
-//    public ModelAndView productsByCategory(@PathVariable("categoryId") Long categoryId) {
-//        ModelAndView mv = new ModelAndView("products");
-//        mv.addObject("products", productService.findByCategoryId(categoryId));
-//        return mv;
-//    }
+    @GetMapping("/category/{categoryId}")
+    public ModelAndView productsByCategory(@PathVariable("categoryId") Long categoryId) {
+        ModelAndView mv = new ModelAndView("products");
+        mv.addObject("products", productService.findByCategoryId(categoryId));
+        return mv;
+    }
 
-//    @GetMapping("/search")
-//    public ModelAndView search(
-//            @RequestParam(value = "text", required = false)String  text,
-//            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
-//            @RequestParam(value = "brandId", required = false) Long brandId,
-//            @RequestParam(value = "categoryId", required = false) Long categoryId,
-//            @RequestParam(value = "size", required = false) Integer size,
-//            @RequestParam(value = "sort", required = false) String sort,
-//            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-//            ) {
-//        ModelAndView mv = new ModelAndView("product/search");
-//
-//        mv.addObject("text", text);
-//        mv.addObject("maxPrice", maxPrice);
-//        mv.addObject("brandId", brandId);
-//        mv.addObject("categoryId", categoryId);
-//        mv.addObject("size", size);
-//        mv.addObject("sort", sort);
-//        mv.addObject("page", page);
-//
-//        boolean firtLoad =
-//                (text == null || text.isBlank()) &&
-//                        maxPrice == null &&
-//                        brandId == null &&
-//                        categoryId == null &&
-//                        size == null &&
-//                        (sort == null || sort.isBlank()) &&
-//                        page == 0;
-//        mv.addObject("searched", !firtLoad);
-//
-//        if(firtLoad){
-//            return mv;
-//        }
-//        int pageSize = (size == null || size <= 0) ? 10 : size;
-//
-//        Sort springSort = buildSort(sort);
-//        Pageable pageable = PageRequest.of(page, pageSize, springSort);
-//
-//        Page<Product> productPage = productService.searchProducts(
-//                text,
-//                maxPrice,
-//                brandId,
-//                categoryId,
-//                pageable
-//        );
-//
-//        mv.addObject("productPage", productPage);
-//        mv.addObject("products", productPage.getContent());
-//        mv.addObject("hasResults", !productPage.isEmpty());
-//
-//        int currentPage = productPage.getNumber();
-//        int totalPages = productPage.getTotalPages();
-//
-//        int startPage = Math.max(0, currentPage - 2);
-//        int endPage = Math.min(totalPages -1, currentPage + 2);
-//
-//        mv.addObject("startPage", startPage);
-//        mv.addObject("endPage", endPage);
-//        return mv;
-//
-//    }
+    @GetMapping("/search")
+    public ModelAndView search(
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "maxPrice", required = false) String maxPriceText,
+            @RequestParam(value = "brandId", required = false) Long brandId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        ModelAndView mv = new ModelAndView("search");
+
+        mv.addObject("categories", categoryService.findAll());
+        mv.addObject("brands", brandService.findAll());
+
+        mv.addObject("title", "GEX - Buscar productos");
+        mv.addObject("titulo", "Buscador");
+        mv.addObject("subtitulo", "Busca videojuegos");
+
+        Double maxPrice = null;
+        if (maxPriceText != null && !maxPriceText.isBlank()) {
+            maxPrice = Double.valueOf(maxPriceText.replace(",", "."));
+        }
+
+        int pageSize = (size == null || size <= 0) ? 10 : size;
+        String selectedSort = (sort == null || sort.isBlank()) ? "name" : sort;
+
+        Pageable pageable = PageRequest.of(page, pageSize, buildSort(selectedSort));
+
+        Page<Product> productPage = productService.searchProducts(text, maxPrice, brandId, categoryId, pageable);
+
+        mv.addObject("productPage", productPage);
+
+        mv.addObject("text", text);
+        mv.addObject("maxPrice", maxPriceText);
+        mv.addObject("brandId", brandId);
+        mv.addObject("categoryId", categoryId);
+        mv.addObject("size", pageSize);
+        mv.addObject("sort", selectedSort);
+
+        int currentPage = productPage.getNumber();
+        int totalPages = productPage.getTotalPages();
+
+        int startPage = Math.max(0, currentPage - 2);
+        int endPage = Math.min(totalPages - 1, currentPage + 2);
+
+        mv.addObject("startPage", startPage);
+        mv.addObject("endPage", endPage);
+
+        return mv;
+    }
 
     private Sort buildSort(String sort) {
-        if (sort == null || sort.isBlank() || sort.equals("NAME")) {
-            return Sort.by(Sort.Direction.ASC, "name");
-        }
         return switch (sort) {
-            case "PRICE_ASC" -> Sort.by(Sort.Direction.ASC, "price");
-            case "PRICE_DESC" -> Sort.by(Sort.Direction.DESC, "price");
-            case "STOCK_ASC" -> Sort.by(Sort.Direction.ASC, "stock");
-            case "STOCK_DESC" -> Sort.by(Sort.Direction.DESC, "stock");
+            case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
+            case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "stockAsc" -> Sort.by(Sort.Direction.ASC, "stock");
+            case "stockDesc" -> Sort.by(Sort.Direction.DESC, "stock");
+            case "name" -> Sort.by(Sort.Direction.ASC, "name");
             default -> Sort.by(Sort.Direction.ASC, "name");
         };
     }

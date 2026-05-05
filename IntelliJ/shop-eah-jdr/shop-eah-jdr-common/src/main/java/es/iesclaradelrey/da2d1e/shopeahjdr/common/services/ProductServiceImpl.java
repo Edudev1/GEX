@@ -13,7 +13,11 @@ import es.iesclaradelrey.da2d1e.shopeahjdr.common.repositories.CategoryRepositor
 import es.iesclaradelrey.da2d1e.shopeahjdr.common.repositories.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import es.iesclaradelrey.da2d1e.shopeahjdr.common.specifications.ProductSpecifications;
 import org.springframework.stereotype.Service;
 
 import javax.xml.stream.*;
@@ -156,8 +160,31 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
+    public List<Product> findByCategoryId(Long categoryId) {
+        return productRepository.findByCategoriesId(
+                categoryId,
+                Sort.by("name").ascending()
+        );
+    }
+
+    @Override
     public boolean existsByProductName(String productName) {
         return productRepository.existsByNameIgnoreCase(productName);
+    }
+
+    @Override
+    public Page<Product> searchProducts(String text,
+                                        Double maxPrice,
+                                        Long brandId,
+                                        Long categoryId,
+                                        Pageable pageable) {
+        Specification<Product> specification = Specification
+                .where(ProductSpecifications.nameOrDescriptionContains(text))
+                .and(ProductSpecifications.priceLessThanOrEqual(maxPrice))
+                .and(ProductSpecifications.hasBrand(brandId))
+                .and(ProductSpecifications.hasCategory(categoryId));
+
+        return productRepository.findAll(specification, pageable);
     }
 
 
