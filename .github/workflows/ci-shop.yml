@@ -1,0 +1,65 @@
+name: CI - Shop
+
+on:
+  push:
+    paths:
+      - 'IntelliJ/shop-eah-jdr/**'
+      - '.github/workflows/ci-shop.yml'
+
+defaults:
+  run:
+    working-directory: IntelliJ/shop-eah-jdr
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Levantar infraestructura con Docker Compose
+        run: docker compose up -d --build
+
+      - name: Esperar a que la base de datos esté lista
+        run: |
+          echo "Esperando a que db esté Healthy..."
+          for i in {1..24}; do
+            if [ "$(docker inspect --format='{{.State.Health.Status}}' shop-eah-jdr-db)" = "healthy" ]; then
+              echo "Base de datos lista!"
+              exit 0
+            fi
+            echo "Todavía esperando... ($i)"
+            sleep 5
+          done
+          echo "La base de datos no llegó a estar healthy"
+          docker compose logs db
+          exit 1
+
+      - name: Verificar API en puerto 8000
+        run: |
+          echo "Esperando a que la API esté lista en localhost:8000..."
+          curl -4 \
+            --retry 10 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            -v http://localhost:8000/swagger-ui/index.html || exit 1
+          echo "La API responde correctamente!"
+
+      - name: Verificar Web en puerto 8080
+        run: |
+          echo "Esperando a que la web esté lista en localhost:8080..."
+          curl -4 \
+            --retry 10 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            -v http://localhost:8080 || exit 1
+          echo "La web responde correctamente!"
+
+      - name: Logs en caso de fallo
+        if: failure()
+        run: docker compose logs
+
+      - name: Limpiar
+        if: always()
+        run: docker compose down
