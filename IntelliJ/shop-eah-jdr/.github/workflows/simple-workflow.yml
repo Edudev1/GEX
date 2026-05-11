@@ -10,3 +10,13 @@ jobs:
     steps:
       - name: Mostrar mensaje
         run: echo "Hola desde GitHub Actions"
+
+      - name: Mostrar directorio actual
+        run: pwd
+
+      - name: Listar contenido del directorio actual
+        run: ls
+
+      - name: Mostrar versión de Java
+        run: java -versionO
+
